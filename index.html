@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Bisnis - Huda Basreng</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* CSS Reset & Variabel Global */
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --sidebar-bg: #0f172a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .brand {
+            padding: 24px;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .brand span { color: #3b82f6; }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            flex: 1;
+        }
+
+        .nav-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 14px 24px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            gap: 14px;
+            transition: 0.2s;
+        }
+
+        .nav-menu li a:hover, .nav-menu li.active a {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            padding: 32px;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .kpi-header h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .icon-blue { background: #eff6ff; color: #3b82f6; }
+        .icon-green { background: #ecfdf5; color: #10b981; }
+        .icon-red { background: #fef2f2; color: #ef4444; }
+        .icon-yellow { background: #fef9c3; color: #eab308; }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .kpi-trend {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+        .trend-neutral { color: var(--text-muted); }
+
+        /* Charts & Table Section */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-card, .table-card {
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Table Styling */
+        .transaction-list {
+            list-style: none;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .tx-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tx-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .tx-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tx-details p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .tx-amount {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .amt-plus { color: var(--success); }
+        .amt-minus { color: var(--text-main); }
+
+        /* Responsiveness */
+        @media (max-width: 1024px) {
+            .content-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-fire"></i> Huda<span>Basreng</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="active"><a href="#"><i class="fa-solid fa-chart-pie"></i> Ringkasan Bisnis</a></li>
+            <li><a href="#"><i class="fa-solid fa-wallet"></i> Arus Kas (Harian)</a></li>
+            <li><a href="#"><i class="fa-solid fa-boxes-stacked"></i> Stok & Resep</a></li>
+            <li><a href="#"><i class="fa-solid fa-cart-shopping"></i> Riwayat Belanja</a></li>
+            <li><a href="#"><i class="fa-solid fa-gear"></i> Pengaturan</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <div class="header-title">
+                <h1>Kinerja Bisnis Basreng (Pribadi)</h1>
+                <p>Data analitik diperbarui per tanggal 28 Oktober 2026</p>
+            </div>
+            <div class="user-profile">
+                <span style="font-size: 14px; font-weight: 500;">Huda (Owner)</span>
+                <img src="https://ui-avatars.com/api/?name=Huda&background=2563eb&color=fff" alt="User Profile">
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <!-- Card 1 -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>Total Pendapatan (YTD)</h3>
+                        <div class="icon-box icon-blue"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpi-revenue">Rp 0</div>
+                    <div class="kpi-trend trend-up">
+                        <i class="fa-solid fa-caret-up"></i> Penjualan Langsung
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>Total Belanja Bahan</h3>
+                        <div class="icon-box icon-red"><i class="fa-solid fa-cart-arrow-down"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpi-expense">Rp 0</div>
+                    <div class="kpi-trend trend-neutral">
+                        <i class="fa-solid fa-minus"></i> Kanji, Terigu, dll
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>Laba Bersih (Keuntungan)</h3>
+                        <div class="icon-box icon-green"><i class="fa-solid fa-sack-dollar"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpi-profit">Rp 0</div>
+                    <div class="kpi-trend trend-up">
+                        <i class="fa-solid fa-caret-up"></i> Uang Siap Pakai
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>Stok Bahan Baku Utama</h3>
+                        <div class="icon-box icon-yellow"><i class="fa-solid fa-wheat-awn"></i></div>
+                    </div>
+                    <div class="kpi-value">1 <span style="font-size: 16px; font-weight:500; color:var(--text-muted)">Karung Sisa</span></div>
+                    <div class="kpi-trend trend-down">
+                        <i class="fa-solid fa-bell"></i> Waktunya restock minggu depan
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart & Table Area -->
+            <div class="content-grid">
+                
+                <!-- Line Chart -->
+                <div class="chart-card">
+                    <div class="section-title">
+                        <span>Grafik Pendapatan vs Belanja Bahan (Jan - Okt 2026)</span>
+                        <i class="fa-solid fa-ellipsis" style="color: var(--text-muted); cursor:pointer;"></i>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="table-card">
+                    <div class="section-title">
+                        <span>Catatan Keuangan Terbaru</span>
+                        <a href="#" style="font-size: 13px; color: var(--primary); text-decoration: none;">Lihat Buku Kas</a>
+                    </div>
+                    <ul class="transaction-list">
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon"><i class="fa-solid fa-sun"></i></div>
+                                <div class="tx-details">
+                                    <h4>Penjualan Hari Minggu</h4>
+                                    <p>25 Okt 2026 • Omset Ramai</p>
+                                </div>
+                            </div>
+                            <div class="tx-amount amt-plus">+Rp 345.000</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                                <div class="tx-details">
+                                    <h4>1 Karung Kanji (25kg)</h4>
+                                    <p>24 Okt 2026 • Harga @17rb/kg</p>
+                                </div>
+                            </div>
+                            <div class="tx-amount amt-minus">-Rp 425.000</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                                <div class="tx-details">
+                                    <h4>1 Karung Terigu (25kg)</h4>
+                                    <p>24 Okt 2026 • Harga @12rb/kg</p>
+                                </div>
+                            </div>
+                            <div class="tx-amount amt-minus">-Rp 300.000</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon"><i class="fa-solid fa-store"></i></div>
+                                <div class="tx-details">
+                                    <h4>Penjualan Harian Biasa</h4>
+                                    <p>23 Okt 2026 • Jualan Langsung</p>
+                                </div>
+                            </div>
+                            <div class="tx-amount amt-plus">+Rp 180.000</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon"><i class="fa-solid fa-egg"></i></div>
+                                <div class="tx-details">
+                                    <h4>Telur, Minyak & Bumbu</h4>
+                                    <p>21 Okt 2026 • Belanja Pasar</p>
+                                </div>
+                            </div>
+                            <div class="tx-amount amt-minus">-Rp 165.000</div>
+                        </li>
+                    </ul>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <!-- Script JavaScript untuk Data dan Grafik -->
+    <script>
+        // Data Omset Skala UMKM Pribadi (Tanpa Cabang)
+        // Fluktuasi dari jualan harian (50rb - 300an rb)
+        const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt (28th)'];
+        
+        // Pemasukan kotor dari jualan sendiri
+        const revenueData = [5250000, 4850000, 5650000, 6250500, 5150000, 5420000, 5350000, 5850000, 5120000, 4955000];
+        
+        // Pengeluaran untuk bahan (Sistem Karungan & Kiloan telur/bumbu)
+        const expenseData = [2450000, 2220000, 2600000, 3150000, 2350000, 2400000, 2550000, 2750000, 2320000, 2250000];
+
+        // Kalkulasi Total (Year to Date) untuk KPI Card
+        const totalRevenue = revenueData.reduce((a, b) => a + b, 0);
+        const totalExpense = expenseData.reduce((a, b) => a + b, 0);
+        const netProfit = totalRevenue - totalExpense;
+
+        // Fungsi Format Mata Uang Rupiah
+        const formatIDR = (number) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(number);
+        };
+
+        // Memasukkan data kalkulasi ke HTML KPI Card
+        document.getElementById('kpi-revenue').innerText = formatIDR(totalRevenue);
+        document.getElementById('kpi-expense').innerText = formatIDR(totalExpense);
+        document.getElementById('kpi-profit').innerText = formatIDR(netProfit);
+
+        // Inisialisasi Grafik (Chart.js)
+        const ctx = document.getElementById('financeChart').getContext('2d');
+        
+        // Membuat efek gradasi warna untuk garis grafik
+        let gradientRev = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientRev.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
+        gradientRev.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+        const financeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Hasil Jualan (Rp)',
+                        data: revenueData,
+                        borderColor: '#2563eb', // Biru
+                        backgroundColor: gradientRev,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#2563eb',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4 // Kurva modern
+                    },
+                    {
+                        label: 'Modal Belanja Bahan (Rp)',
+                        data: expenseData,
+                        borderColor: '#ef4444', // Merah 
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Garis putus-putus
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#ef4444',
+                        pointBorderWidth: 2,
+                        pointRadius: 3,
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { family: "'Inter', sans-serif", size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#111827',
+                        titleFont: { family: "'Inter', sans-serif", size: 13 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += formatIDR(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: "'Inter', sans-serif" } }
+                    },
+                    y: {
+                        border: { display: false },
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            font: { family: "'Inter', sans-serif" },
+                            callback: function(value) {
+                                // Tampilan angka di pinggir grafik misal (Rp 5.2 Jt)
+                                return 'Rp ' + (value / 1000000).toFixed(1) + ' Jt';
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    </script>
+</body>
+</html>
